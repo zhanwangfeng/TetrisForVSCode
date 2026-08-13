@@ -1,9 +1,9 @@
 {
-  "name": "tetris-for-vscode",
-  "displayName": "Tetris",
+  "name": "tetris-pro",
+  "displayName": "TetrisPro",
   "description": "Play Tetris in VS Code",
   "version": "1.0.0",
-  "publisher": "tetris-dev",
+  "publisher": "zhanwangfeng",
   "license": "MIT",
   "icon": "resources/tetris-icon-high.png",
   "engines": {
