@@ -1,0 +1,55 @@
+{
+  "name": "tetris-for-vscode",
+  "displayName": "Tetris",
+  "description": "Play Tetris in VS Code",
+  "version": "1.0.0",
+  "publisher": "tetris-dev",
+  "license": "MIT",
+  "icon": "resources/tetris-icon-high.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "tetris",
+          "title": "Tetris",
+          "icon": "resources/tetris-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "tetris": [
+        {
+          "id": "tetrisView",
+          "name": "Tetris",
+          "type": "webview",
+          "icon": "resources/tetris-icon.svg",
+          "contextualTitle": "Tetris"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "tetris.start",
+        "title": "Tetris: Start Game"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.3"
+  }
+}
