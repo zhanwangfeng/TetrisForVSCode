@@ -1,6 +1,12 @@
 # Tetris for VS Code
 
+[![VS Marketplace](https://vsmarketplacebadges.dev/version-short/zhanwangfeng.tetris-pro.svg)](https://marketplace.visualstudio.com/items?itemName=zhanwangfeng.tetris-pro)
+[![Installs](https://vsmarketplacebadges.dev/installs/zhanwangfeng.tetris-pro.svg)](https://marketplace.visualstudio.com/items?itemName=zhanwangfeng.tetris-pro)
+
 在 VS Code 中直接游玩俄罗斯方块的扩展插件。
+
+- GitHub: https://github.com/zhanwangfeng/TetrisForVSCode
+- VSCode: https://marketplace.visualstudio.com/items?itemName=zhanwangfeng.tetris-pro
 
 ## 1. 插件说明
 
