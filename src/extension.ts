@@ -97,6 +97,7 @@ class TetrisWebviewViewProvider implements vscode.WebviewViewProvider {
           <li><span>Hard Drop</span><kbd>Space</kbd></li>
           <li><span>Hold</span><kbd>C</kbd></li>
         </ul>
+        <div class="title" style="margin-top:12px;"><a href="https://codejson.cn/games/tetris/" target="_blank" rel="noopener noreferrer">Website For Tetris →</a></div>
         <script>
           const vscode = acquireVsCodeApi();
           document.getElementById('startBtn').addEventListener('click', () => {
