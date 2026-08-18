@@ -16,7 +16,8 @@ const CONTROLS: TreeNode[] = [
   { label: '旋转', description: '↑' },
   { label: '软降', description: '↓' },
   { label: '硬降', description: '空格' },
-  { label: '暂存', description: 'C' }
+  { label: '暂存', description: 'C' },
+  { label: '暂停', description: '回车' }
 ];
 
 const TREE: TreeNode[] = [

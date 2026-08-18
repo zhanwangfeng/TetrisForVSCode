@@ -124,16 +124,29 @@ body{
 .bottom-btn-area{
   margin-top:20px;
 }
-#btnNewGame{
+#btnNewGame,#btnPause{
   padding:10px 24px;
   background:#222836;
   color:#fff;
   border:1px solid #444c60;
   border-radius:6px;
   font-size:14px;
+  cursor:pointer;
 }
-#btnNewGame:hover{
+#btnNewGame:hover,#btnPause:hover{
   background:#2c3446;
+}
+.pause-overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.65);
+  z-index:25;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  color:#7cf;
+  text-shadow:0 0 12px #000;
+  display:none;
 }
 </style>
 </head>
@@ -169,9 +182,11 @@ body{
       <div class="next-stack" id="nextStack"></div>
     </div>
     <div class="game-over-overlay" id="gameOverlay"><span data-lang="gameOver">GAME OVER</span><br /><span data-lang="restartHint" style="font-size:14px;margin-top:12px;display:block">点下方按钮重启</span></div>
+    <div class="pause-overlay" id="pauseOverlay"><span data-lang="paused">已暂停</span></div>
   </div>
 </div>
 <div class="bottom-btn-area">
+  <button id="btnPause" data-lang="btnPause">暂停</button>
   <button id="btnNewGame" data-lang="btnNewGame">新游戏 / 重新开始</button>
   <button id="btnLang" style="margin-left:10px;padding:10px 16px;background:#222836;color:#fff;border:1px solid #444c60;border-radius:6px;font-size:14px;cursor:pointer;">EN</button>
 </div>
@@ -271,6 +286,8 @@ const mainBoardEl = document.getElementById('mainBoard');
 const holdBoardEl = document.getElementById('holdBoard');
 const nextStackEl = document.getElementById('nextStack');
 const gameOverlay = document.getElementById('gameOverlay');
+const pauseOverlay = document.getElementById('pauseOverlay');
+const btnPause = document.getElementById('btnPause');
 const scoreVal = document.getElementById('scoreVal');
 const linesVal = document.getElementById('linesVal');
 const levelVal = document.getElementById('levelVal');
@@ -286,6 +303,7 @@ let gameState = {
   dropTimer:null,
   dropInterval:1000,
   gameOver:false,
+  paused:false,
   bag:[],
   nextQueue:[],
   holdPiece:null,
@@ -407,7 +425,7 @@ function spawnNext(){
   renderAll();
 }
 function doHold(){
-  if(!gameState.canHold || gameState.gameOver) return;
+  if(!gameState.canHold || gameState.gameOver || gameState.paused) return;
   gameState.canHold = false;
   const prev = gameState.holdPiece;
   gameState.holdPiece = gameState.cur.id;
@@ -420,7 +438,7 @@ function doHold(){
 }
 // 移动
 function move(dx){
-  if(gameState.gameOver) return;
+  if(gameState.gameOver || gameState.paused) return;
   const c = gameState.cur;
   if(!checkCollision(c.id, c.rot, c.x+dx, c.y)){
     c.x += dx;
@@ -430,7 +448,7 @@ function move(dx){
 
 // 旋转逻辑：NES 风格墙踢偏移（Wall Kick）
 function rotate(){
-  if(gameState.gameOver) return;
+  if(gameState.gameOver || gameState.paused) return;
   const c = gameState.cur;
   const nr = (c.rot + 1) % 4;
   // NES 踢墙偏移：I 方块尝试更多偏移
@@ -449,7 +467,7 @@ function rotate(){
 }
 
 function softDrop(){
-  if(gameState.gameOver) return;
+  if(gameState.gameOver || gameState.paused) return;
   const c = gameState.cur;
   if(!checkCollision(c.id, c.rot, c.x, c.y+1)){
     c.y +=1;
@@ -460,7 +478,7 @@ function softDrop(){
   }
 }
 function hardDrop(){
-  if(gameState.gameOver) return;
+  if(gameState.gameOver || gameState.paused) return;
   const gy = getGhostY();
   gameState.score += (gy-gameState.cur.y)*2;
   gameState.cur.y = gy;
@@ -584,6 +602,9 @@ const LANG = {
     gameOver: '游戏结束',
     restartHint: '点下方按钮重启',
     btnNewGame: '新游戏 / 重新开始',
+    btnPause: '暂停',
+    btnResume: '继续',
+    paused: '已暂停',
     btnLang: 'EN'
   },
   en: {
@@ -596,6 +617,9 @@ const LANG = {
     gameOver: 'GAME OVER',
     restartHint: 'Click button to restart',
     btnNewGame: 'New Game / Restart',
+    btnPause: 'Pause',
+    btnResume: 'Resume',
+    paused: 'Paused',
     btnLang: '中文'
   }
 };
@@ -603,6 +627,7 @@ function updateLanguage(){
   const lang = LANG[currentLang];
   document.querySelectorAll('[data-lang]').forEach(el => {
     const key = el.getAttribute('data-lang');
+    if(key === 'btnPause') return; // 由 updatePauseButton 根据 paused 状态管理
     if(lang[key] !== undefined){
       if(key === 'keymap'){
         el.innerHTML = lang[key];
@@ -613,10 +638,11 @@ function updateLanguage(){
   });
   document.getElementById('btnLang').textContent = lang.btnLang;
   document.title = lang.htmlTitle;
+  updatePauseButton();
 }
 // 自动下落循环
 function tickDrop(){
-  if(gameState.gameOver){
+  if(gameState.gameOver || gameState.paused){
     clearInterval(gameState.dropTimer);
     return;
   }
@@ -634,6 +660,23 @@ function getRandomScene(){
   const all = [...SCENES, RETRO_1984, RETRO_1989];
   return all[Math.floor(Math.random() * all.length)];
 }
+// 暂停 / 继续
+function updatePauseButton(){
+  const lang = LANG[currentLang];
+  btnPause.textContent = gameState.paused ? lang.btnResume : lang.btnPause;
+}
+function togglePause(){
+  if(gameState.gameOver) return;
+  gameState.paused = !gameState.paused;
+  if(gameState.paused){
+    clearInterval(gameState.dropTimer);
+    pauseOverlay.style.display = 'flex';
+  }else{
+    gameState.dropTimer = setInterval(tickDrop, gameState.dropInterval);
+    pauseOverlay.style.display = 'none';
+  }
+  updatePauseButton();
+}
 // 新游戏重置
 function newGame(){
   gameState.board = Array.from({length:ROWS}, ()=>Array(COLS).fill(-1));
@@ -642,6 +685,7 @@ function newGame(){
   gameState.level =1;
   gameState.dropInterval = 1000;
   gameState.gameOver = false;
+  gameState.paused = false;
   gameState.bag = [];
   gameState.nextQueue = [];
   gameState.holdPiece = null;
@@ -652,6 +696,8 @@ function newGame(){
   applyScene(getRandomScene());
   spawnNext();
   updateStatsUi();
+  pauseOverlay.style.display = 'none';
+  updatePauseButton();
   clearInterval(gameState.dropTimer);
   gameState.dropTimer = setInterval(tickDrop, gameState.dropInterval);
 }
@@ -665,9 +711,11 @@ document.addEventListener('keydown',(e)=>{
     case 'ArrowDown': softDrop();break;
     case ' ': hardDrop();e.preventDefault();break;
     case 'c': case 'C': doHold();break;
+    case 'Enter': togglePause();break;
   }
 })
 document.getElementById('btnNewGame').onclick = newGame;
+btnPause.onclick = togglePause;
 document.getElementById('btnLang').onclick = function(){
   currentLang = currentLang === 'zh' ? 'en' : 'zh';
   updateLanguage();
