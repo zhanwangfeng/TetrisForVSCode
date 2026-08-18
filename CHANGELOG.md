@@ -5,6 +5,10 @@ All notable changes to the "tetris-for-vscode" extension will be documented in t
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.5] - 2026-08-14
+
+### 添加音效
+
 ## [1.0.4] - 2026-08-14
 
 ### 修复BUG

@@ -2,7 +2,7 @@
   "name": "tetris-pro",
   "displayName": "TetrisPro",
   "description": "Play Tetris in VS Code",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "publisher": "zhanwangfeng",
   "license": "MIT",
   "icon": "resources/tetris-icon-high.png",
@@ -11,6 +11,14 @@
   },
   "categories": [
     "Other"
+  ],
+  "keywords": [
+    "tetris",
+    "game",
+    "俄罗斯",
+    "方块",
+    "俄罗斯方块",
+    "游戏"
   ],
   "files": [
     "out",
