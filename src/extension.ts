@@ -1,112 +1,53 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 
-class TetrisWebviewViewProvider implements vscode.WebviewViewProvider {
-  constructor(private readonly context: vscode.ExtensionContext) {}
+interface TreeNode {
+  label: string;
+  description?: string;
+  icon?: string;
+  command?: string;
+  children?: TreeNode[];
+  collapsible?: vscode.TreeItemCollapsibleState;
+}
 
-  resolveWebviewView(webviewView: vscode.WebviewView): void {
-    const webview = webviewView.webview;
-    webview.options = {
-      enableScripts: true,
-      localResourceRoots: [
-        vscode.Uri.joinPath(this.context.extensionUri, 'src', 'webview'),
-        vscode.Uri.joinPath(this.context.extensionUri, 'resources')
-      ]
-    };
+const CONTROLS: TreeNode[] = [
+  { label: '向左移动', description: '←' },
+  { label: '向右移动', description: '→' },
+  { label: '旋转', description: '↑' },
+  { label: '软降', description: '↓' },
+  { label: '硬降', description: '空格' },
+  { label: '暂存', description: 'C' }
+];
 
-    webview.html = this.getHtml(webview);
+const TREE: TreeNode[] = [
+  { label: '开始游戏', icon: 'play', command: 'tetris.start' },
+  { label: '操作说明', icon: 'keyboard', collapsible: vscode.TreeItemCollapsibleState.Expanded, children: CONTROLS },
+  { label: '访问网站', icon: 'link', command: 'tetris.openWebsite' }
+];
 
-    webview.onDidReceiveMessage((message) => {
-      if (message.command === 'start') {
-        openGame(this.context);
-      }
-    });
+class TetrisTreeDataProvider implements vscode.TreeDataProvider<TreeNode> {
+  getTreeItem(element: TreeNode): vscode.TreeItem {
+    const item = new vscode.TreeItem(
+      element.label,
+      element.collapsible ?? vscode.TreeItemCollapsibleState.None
+    );
+    if (element.description) {
+      item.description = element.description;
+    }
+    if (element.icon) {
+      item.iconPath = new vscode.ThemeIcon(element.icon);
+    }
+    if (element.command) {
+      item.command = { command: element.command, title: element.label };
+    }
+    return item;
   }
 
-  private getHtml(webview: vscode.Webview): string {
-    const iconUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this.context.extensionUri, 'resources', 'tetris-icon-high.svg')
-    );
-
-    return /* html */ `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body {
-            padding: 12px;
-            color: var(--vscode-foreground);
-            font-family: var(--vscode-font-family);
-            font-size: 13px;
-          }
-          .header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
-          }
-          .header img { width: 28px; height: 28px; }
-          .header h2 { margin: 0; font-size: 16px; }
-          button {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 16px;
-            background: var(--vscode-button-background);
-            color: var(--vscode-button-foreground);
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-          }
-          button:hover { background: var(--vscode-button-hoverBackground); }
-          .keys { margin: 0; padding: 0; list-style: none; }
-          .keys li {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 5px 0;
-            border-bottom: 1px solid var(--vscode-panel-border);
-          }
-          .keys li:last-child { border-bottom: none; }
-          kbd {
-            background: var(--vscode-textCodeBlock-background);
-            border-radius: 3px;
-            padding: 2px 6px;
-            font-family: var(--vscode-editor-font-family);
-            font-size: 12px;
-            min-width: 22px;
-            text-align: center;
-          }
-          .title { opacity: 0.7; margin-bottom: 6px; font-size: 12px; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <img src="${iconUri}" alt="Tetris" />
-          <h2>Tetris</h2>
-        </div>
-        <button id="startBtn">Start Game</button>
-        <div class="title">Controls</div>
-        <ul class="keys">
-          <li><span>Move Left</span><kbd>←</kbd></li>
-          <li><span>Move Right</span><kbd>→</kbd></li>
-          <li><span>Rotate</span><kbd>↑</kbd></li>
-          <li><span>Soft Drop</span><kbd>↓</kbd></li>
-          <li><span>Hard Drop</span><kbd>Space</kbd></li>
-          <li><span>Hold</span><kbd>C</kbd></li>
-        </ul>
-        <div class="title" style="margin-top:12px;"><a href="https://codejson.cn/games/tetris/" target="_blank" rel="noopener noreferrer">Website For Tetris →</a></div>
-        <script>
-          const vscode = acquireVsCodeApi();
-          document.getElementById('startBtn').addEventListener('click', () => {
-            vscode.postMessage({ command: 'start' });
-          });
-        </script>
-      </body>
-      </html>
-    `;
+  getChildren(element?: TreeNode): TreeNode[] {
+    if (!element) {
+      return TREE;
+    }
+    return element.children ?? [];
   }
 }
 
@@ -141,10 +82,13 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(
-      'tetrisView',
-      new TetrisWebviewViewProvider(context)
-    )
+    vscode.commands.registerCommand('tetris.openWebsite', () => {
+      vscode.env.openExternal(vscode.Uri.parse('https://codejson.cn/games/tetris/'));
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.window.registerTreeDataProvider('tetrisView', new TetrisTreeDataProvider())
   );
 }
 

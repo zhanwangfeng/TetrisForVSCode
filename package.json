@@ -2,7 +2,7 @@
   "name": "tetris-pro",
   "displayName": "TetrisPro",
   "description": "Play Tetris in VS Code",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "zhanwangfeng",
   "license": "MIT",
   "icon": "resources/tetris-icon-high.png",
@@ -36,7 +36,6 @@
         {
           "id": "tetrisView",
           "name": "Tetris",
-          "type": "webview",
           "icon": "resources/tetris-icon.svg",
           "contextualTitle": "Tetris"
         }
@@ -46,6 +45,10 @@
       {
         "command": "tetris.start",
         "title": "Tetris: Start Game"
+      },
+      {
+        "command": "tetris.openWebsite",
+        "title": "Tetris: Open Website"
       }
     ]
   },
