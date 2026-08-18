@@ -2,7 +2,7 @@
   "name": "tetris-pro",
   "displayName": "TetrisPro",
   "description": "Play Tetris in VS Code",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publisher": "zhanwangfeng",
   "license": "MIT",
   "icon": "resources/tetris-icon-high.png",
@@ -15,6 +15,7 @@
   "files": [
     "out",
     "resources",
+    "src/webview",
     "README.md",
     "CHANGELOG.md",
     "LICENSE"
